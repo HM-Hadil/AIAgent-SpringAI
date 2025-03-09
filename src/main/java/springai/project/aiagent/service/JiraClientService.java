@@ -1,28 +1,20 @@
 package springai.project.aiagent.service;
 
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import java.util.Base64;
 
 @Service
 public class JiraClientService {
     private final WebClient webClient;
 
-    public JiraClientService(@Value("${jira.url}") String jiraUrl,
-                             @Value("${jira.username}") String username,
-                             @Value("${jira.password}") String password) {
-        String auth = username + ":" + password;
-        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes());
-
-        this.webClient = WebClient.builder()
-                .baseUrl(jiraUrl + "/rest/api/2")
-                .defaultHeader("Authorization", "Basic " + encodedAuth)
-                .defaultHeader("Content-Type", "application/json")
-                .build();
+    // Injection du bean jiraWebClient défini dans la configuration
+    @Autowired
+    public JiraClientService(WebClient jiraWebClient) {
+        this.webClient = jiraWebClient;
     }
 
-    // ✅ Récupérer la liste des projets
+    // ✅ Récupérer la liste des projets Jira
     public String getAllProjects() {
         return webClient.get()
                 .uri("/project")
