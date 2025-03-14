@@ -61,4 +61,9 @@ public class JiraController {
         List<Comment> comments = myJiraClient.getAllComments(issueKey);
         return ResponseEntity.ok(comments);
     }
+
+    @GetMapping("/versions/{versionId}/tickets")
+    public List<Issue> getTicketsByVersion(@PathVariable String versionId) {
+        return myJiraClient.getTicketsByVersion(versionId);
+    }
 }

@@ -4,6 +4,7 @@ import com.atlassian.jira.rest.client.api.IssueRestClient;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.domain.Comment;
 import com.atlassian.jira.rest.client.api.domain.Issue;
+import com.atlassian.jira.rest.client.api.domain.SearchResult;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInput;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -68,6 +70,33 @@ public class MyJiraClient {
         restClient.getIssueClient()
                 .updateIssue(issueKey, input)
                 .claim();
+    }
+
+    /**
+     * Récupère tous les tickets associés à une version Jira
+     *
+     * @param versionId L'identifiant ou le nom de la version Jira
+     * @return Liste des tickets inclus dans cette version
+     */
+    public List<Issue> getTicketsByVersion(String versionId) {
+        List<Issue> tickets = new ArrayList<>();
+
+        try {
+            // Requête JQL pour récupérer les tickets de cette version
+            String jql = "fixVersion = '" + versionId + "'";
+
+            // Exécuter la recherche (max 500 tickets)
+            SearchResult result = restClient.getSearchClient()
+                    .searchJql(jql, 500, 0, null)
+                    .claim();
+
+            // Ajouter les résultats à notre liste
+            result.getIssues().forEach(tickets::add);
+
+            return tickets;
+        } catch (Exception e) {
+            throw new RuntimeException("Erreur lors de la récupération des tickets pour la version: " + versionId, e);
+        }
     }
 
     public Issue getIssue(String issueKey) {
